@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../database');
+const { logAction } = require('../services/audit');
 
 const router = express.Router();
 
@@ -66,7 +67,7 @@ router.get('/user/:userId', requireAdmin, (req, res) => {
 });
 
 // Create payment record
-router.post('/', requireAdmin, (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
     try {
         const { user_id, amount, period_month, period_year, due_date } = req.body;
 
@@ -89,6 +90,8 @@ router.post('/', requireAdmin, (req, res) => {
             VALUES (?, ?, ?, ?, ?, 'pending')
         `).run(user_id, amount, period_month, period_year, due_date);
 
+        await logAction('PAYMENT_CREATE', `Created payment for user ID ${user_id}, period ${period_month}/${period_year}`, req);
+
         res.json({
             success: true,
             message: 'Tagihan berhasil dibuat',
@@ -101,7 +104,7 @@ router.post('/', requireAdmin, (req, res) => {
 });
 
 // Mark payment as paid
-router.post('/:id/pay', requireAdmin, (req, res) => {
+router.post('/:id/pay', requireAdmin, async (req, res) => {
     try {
         const paymentId = req.params.id;
         const { notes } = req.body;
@@ -124,6 +127,9 @@ router.post('/:id/pay', requireAdmin, (req, res) => {
 
         // Activate user if was deactivated due to non-payment
         db.prepare('UPDATE users SET is_active = 1 WHERE id = ?').run(payment.user_id);
+
+        await logAction('PAYMENT_PAID', `Marked payment ID ${paymentId} as paid`, req);
+        await logAction('USER_REACTIVATE', `Reactivated user ID ${payment.user_id} after payment`, req);
 
         // Create next month's payment
         const nextMonth = payment.period_month === 12 ? 1 : payment.period_month + 1;
@@ -149,7 +155,7 @@ router.post('/:id/pay', requireAdmin, (req, res) => {
 });
 
 // Mark payment as overdue
-router.post('/:id/overdue', requireAdmin, (req, res) => {
+router.post('/:id/overdue', requireAdmin, async (req, res) => {
     try {
         const paymentId = req.params.id;
 
@@ -161,7 +167,10 @@ router.post('/:id/overdue', requireAdmin, (req, res) => {
         // Deactivate user
         if (payment) {
             db.prepare('UPDATE users SET is_active = 0 WHERE id = ?').run(payment.user_id);
+            await logAction('USER_DEACTIVATE', `Deactivated user ID ${payment.user_id} due to overdue payment`, req);
         }
+
+        await logAction('PAYMENT_OVERDUE', `Marked payment ID ${paymentId} as overdue`, req);
 
         res.json({ success: true, message: 'Status diubah ke overdue dan user dinonaktifkan' });
     } catch (error) {
@@ -171,11 +180,13 @@ router.post('/:id/overdue', requireAdmin, (req, res) => {
 });
 
 // Delete payment
-router.delete('/:id', requireAdmin, (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
     try {
         const paymentId = req.params.id;
 
         db.prepare('DELETE FROM payments WHERE id = ?').run(paymentId);
+
+        await logAction('PAYMENT_DELETE', `Deleted payment ID ${paymentId}`, req);
 
         res.json({ success: true, message: 'Pembayaran berhasil dihapus' });
     } catch (error) {
@@ -185,7 +196,7 @@ router.delete('/:id', requireAdmin, (req, res) => {
 });
 
 // Generate monthly payments for all users
-router.post('/generate', requireAdmin, (req, res) => {
+router.post('/generate', requireAdmin, async (req, res) => {
     try {
         const { month, year } = req.body;
 
@@ -216,6 +227,8 @@ router.post('/generate', requireAdmin, (req, res) => {
                 skipped++;
             }
         }
+
+        await logAction('PAYMENT_GENERATE_BULK', `Generated ${created} payments for ${month}/${year}`, req);
 
         res.json({
             success: true,

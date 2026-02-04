@@ -1,11 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../database');
+const { logAction } = require('../services/audit');
 
 const router = express.Router();
 
 // Admin login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
@@ -16,12 +17,14 @@ router.post('/login', (req, res) => {
         const admin = db.prepare('SELECT * FROM admins WHERE username = ?').get(username);
 
         if (!admin) {
+            await logAction('ADMIN_LOGIN_FAILED', `Failed login attempt for username: ${username}`, req);
             return res.status(401).json({ error: 'Username atau password salah' });
         }
 
         const validPassword = bcrypt.compareSync(password, admin.password);
 
         if (!validPassword) {
+            await logAction('ADMIN_LOGIN_FAILED', `Failed login attempt for username: ${username}`, req);
             return res.status(401).json({ error: 'Username atau password salah' });
         }
 
@@ -30,6 +33,8 @@ router.post('/login', (req, res) => {
             username: admin.username,
             name: admin.name
         };
+
+        await logAction('ADMIN_LOGIN', `Admin ${admin.username} logged in`, req);
 
         res.json({
             success: true,
@@ -47,7 +52,10 @@ router.post('/login', (req, res) => {
 });
 
 // Admin logout
-router.post('/logout', (req, res) => {
+router.post('/logout', async (req, res) => {
+    if (req.session.admin) {
+        await logAction('ADMIN_LOGOUT', `Admin ${req.session.admin.username} logged out`, req);
+    }
     req.session.destroy();
     res.json({ success: true, message: 'Logout berhasil' });
 });
@@ -136,7 +144,7 @@ router.post('/portal/login', (req, res) => {
 });
 
 // Change admin password
-router.post('/change-password', (req, res) => {
+router.post('/change-password', async (req, res) => {
     try {
         if (!req.session.admin) {
             return res.status(401).json({ error: 'Unauthorized' });
@@ -147,11 +155,14 @@ router.post('/change-password', (req, res) => {
         const admin = db.prepare('SELECT * FROM admins WHERE id = ?').get(req.session.admin.id);
 
         if (!bcrypt.compareSync(currentPassword, admin.password)) {
+            await logAction('PASSWORD_CHANGE_FAILED', `Failed password change attempt for admin ${req.session.admin.username}`, req);
             return res.status(400).json({ error: 'Password saat ini salah' });
         }
 
         const hashedPassword = bcrypt.hashSync(newPassword, 10);
         db.prepare('UPDATE admins SET password = ? WHERE id = ?').run(hashedPassword, admin.id);
+
+        await logAction('PASSWORD_CHANGE', `Admin ${req.session.admin.username} changed password`, req);
 
         res.json({ success: true, message: 'Password berhasil diubah' });
     } catch (error) {

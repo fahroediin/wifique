@@ -30,6 +30,7 @@ app.use('/api/bandwidth', require('./routes/bandwidth'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/pakasir', require('./routes/pakasir'));
+app.use('/api/audit', require('./routes/audit'));
 
 // Portal route (Captive Portal)
 app.get('/portal', (req, res) => {

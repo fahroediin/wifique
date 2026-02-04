@@ -93,7 +93,7 @@ body {
     min-height: 100vh;
 }
 
-/* Sidebar */
+/* Sidebar Revamp */
 .sidebar {
     width: var(--sidebar-width);
     background: var(--bg-primary);
@@ -103,91 +103,150 @@ body {
     position: fixed;
     height: 100vh;
     z-index: 100;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-header {
-    padding: 24px 20px;
+    height: 80px;
+    padding: 0 28px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     border-bottom: 1px solid var(--border);
 }
 
 .sidebar-header .logo-small {
     width: 36px;
     height: 36px;
-    background: var(--accent);
-    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.sidebar-header .logo-small svg {
-    width: 20px;
-    height: 20px;
     color: white;
+    box-shadow: var(--shadow-sm);
 }
 
 .sidebar-header span {
     font-size: 20px;
     font-weight: 700;
     color: var(--text-primary);
+    letter-spacing: -0.5px;
 }
 
 .sidebar-nav {
     flex: 1;
-    padding: 16px 12px;
+    padding: 24px 16px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: 14px;
+    padding: 12px 18px;
     color: var(--text-secondary);
     text-decoration: none;
     border-radius: var(--radius-md);
-    margin-bottom: 4px;
-    transition: var(--transition);
+    transition: all 0.2s ease;
     font-weight: 500;
+    font-size: 15px;
+    position: relative;
+    overflow: hidden;
 }
 
 .nav-item:hover {
-    background: var(--bg-secondary);
+    background: var(--surface-hover);
     color: var(--text-primary);
+    transform: translateX(4px);
 }
 
 .nav-item.active {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 24px;
+    width: 4px;
     background: var(--accent);
-    color: white;
+    border-radius: 0 4px 4px 0;
+}
+
+.nav-item.active svg {
+    color: var(--text-primary);
 }
 
 .nav-item svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2px;
+    transition: transform 0.2s ease;
+}
+
+.nav-item:hover svg {
+    transform: scale(1.1);
+}
+
+.sidebar-footer {
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+    margin-bottom: 20px;
+    /* Space for mobile bottom bar if needed */
+}
+
+#logoutBtn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    color: var(--danger);
+    background: transparent;
+    border: 1px solid var(--danger-bg);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: all 0.2s ease;
+    justify-content: center;
+}
+
+#logoutBtn:hover {
+    background: var(--danger-bg);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+#logoutBtn svg {
     width: 20px;
     height: 20px;
 }
 
-.sidebar-footer {
-    padding: 16px;
-    border-top: 1px solid var(--border);
-}
-
-/* Main Content */
+/* Main Content styling update */
 .main-content {
     flex: 1;
     margin-left: var(--sidebar-width);
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .main-header {
-    background: var(--bg-primary);
-    padding: 20px 32px;
+    height: 70px;
+    padding: 0 32px;
     border-bottom: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: var(--bg-primary);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -255,6 +314,10 @@ body {
 
 .card-body {
     padding: 24px;
+}
+
+.card form {
+    padding: 32px;
 }
 
 /* Stats Grid */
@@ -379,8 +442,13 @@ td {
 }
 
 .badge-danger {
-    background: var(--danger-bg);
+    background: rgba(220, 38, 38, 0.1);
     color: var(--danger);
+}
+
+.badge-info {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
 }
 
 .badge-secondary {
@@ -460,7 +528,7 @@ td {
 
 /* Forms */
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .form-group label {
@@ -475,13 +543,13 @@ td {
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 12px 16px;
+    padding: 14px 16px;
     border: 1px solid var(--border);
+    background: var(--bg-primary);
     border-radius: var(--radius-md);
     font-size: 14px;
-    background: var(--bg-primary);
     color: var(--text-primary);
-    transition: var(--transition);
+    transition: all 0.2s ease;
 }
 
 .form-group input:focus,
@@ -489,7 +557,9 @@ td {
 .form-group textarea:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(73, 80, 87, 0.1);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
+    /* Fallback if variable doesn't exist */
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 85%);
 }
 
 .form-group input::placeholder {
@@ -498,9 +568,71 @@ td {
 
 .form-group small {
     display: block;
-    margin-top: 6px;
-    font-size: 12px;
-    color: var(--text-muted);
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* Checkbox Style */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+.form-check input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    margin: 0;
+    accent-color: var(--accent);
+}
+
+.form-check label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Updated Button Styles for Forms */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    height: 48px;
+    /* Standardize height */
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    height: 36px;
+    font-size: 13px;
 }
 
 /* Modal */

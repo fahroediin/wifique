@@ -58,6 +58,16 @@ CREATE TABLE IF NOT EXISTS notification_log (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Audit logs
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    action VARCHAR(50) NOT NULL,
+    details TEXT,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- System settings
 CREATE TABLE IF NOT EXISTS settings (
     key VARCHAR(50) PRIMARY KEY,

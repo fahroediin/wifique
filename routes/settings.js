@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../database');
+const { logAction } = require('../services/audit');
 
 const router = express.Router();
 
@@ -27,7 +28,7 @@ router.get('/', requireAdmin, (req, res) => {
 });
 
 // Update setting
-router.put('/:key', requireAdmin, (req, res) => {
+router.put('/:key', requireAdmin, async (req, res) => {
     try {
         const { value } = req.body;
         const key = req.params.key;
@@ -38,6 +39,8 @@ router.put('/:key', requireAdmin, (req, res) => {
             ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = CURRENT_TIMESTAMP
         `).run(key, value, value);
 
+        await logAction('SETTING_UPDATE', `Updated setting ${key} to ${value}`, req);
+
         res.json({ success: true, message: 'Setting berhasil diupdate' });
     } catch (error) {
         console.error('Update setting error:', error);
@@ -46,7 +49,7 @@ router.put('/:key', requireAdmin, (req, res) => {
 });
 
 // Update multiple settings
-router.post('/bulk', requireAdmin, (req, res) => {
+router.post('/bulk', requireAdmin, async (req, res) => {
     try {
         const settings = req.body;
 
@@ -59,6 +62,8 @@ router.post('/bulk', requireAdmin, (req, res) => {
         for (const [key, value] of Object.entries(settings)) {
             stmt.run(key, value, value);
         }
+
+        await logAction('SETTINGS_BULK_UPDATE', `Updated settings: ${Object.keys(settings).join(', ')}`, req);
 
         res.json({ success: true, message: 'Settings berhasil diupdate' });
     } catch (error) {

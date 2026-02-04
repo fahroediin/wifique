@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../database');
+const { logAction } = require('../services/audit');
 
 const router = express.Router();
 
@@ -61,7 +62,7 @@ router.get('/:id', requireAdmin, (req, res) => {
 });
 
 // Create new user
-router.post('/', requireAdmin, (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
     try {
         const { username, password, name, unit_name, phone_number, bandwidth_limit } = req.body;
 
@@ -92,6 +93,8 @@ router.post('/', requireAdmin, (req, res) => {
             VALUES (?, ?, ?, ?, ?, 'pending')
         `).run(result.lastInsertRowid, monthlyFee?.value || 100000, now.getMonth() + 1, now.getFullYear(), dueDate.toISOString().split('T')[0]);
 
+        await logAction('USER_CREATE', `Created user ${username} (${name})`, req);
+
         res.json({
             success: true,
             message: 'User berhasil ditambahkan',
@@ -104,12 +107,12 @@ router.post('/', requireAdmin, (req, res) => {
 });
 
 // Update user
-router.put('/:id', requireAdmin, (req, res) => {
+router.put('/:id', requireAdmin, async (req, res) => {
     try {
         const { name, unit_name, phone_number, bandwidth_limit, is_active } = req.body;
         const userId = req.params.id;
 
-        const user = db.prepare('SELECT id FROM users WHERE id = ?').get(userId);
+        const user = db.prepare('SELECT id, username FROM users WHERE id = ?').get(userId);
         if (!user) {
             return res.status(404).json({ error: 'User tidak ditemukan' });
         }
@@ -120,6 +123,8 @@ router.put('/:id', requireAdmin, (req, res) => {
             WHERE id = ?
         `).run(name, unit_name, phone_number, bandwidth_limit, is_active ? 1 : 0, userId);
 
+        await logAction('USER_UPDATE', `Updated user ${user.username} details`, req);
+
         res.json({ success: true, message: 'User berhasil diupdate' });
     } catch (error) {
         console.error('Update user error:', error);
@@ -128,7 +133,7 @@ router.put('/:id', requireAdmin, (req, res) => {
 });
 
 // Update user password
-router.put('/:id/password', requireAdmin, (req, res) => {
+router.put('/:id/password', requireAdmin, async (req, res) => {
     try {
         const { password } = req.body;
         const userId = req.params.id;
@@ -137,9 +142,13 @@ router.put('/:id/password', requireAdmin, (req, res) => {
             return res.status(400).json({ error: 'Password minimal 4 karakter' });
         }
 
+        const user = db.prepare('SELECT username FROM users WHERE id = ?').get(userId);
+
         const hashedPassword = bcrypt.hashSync(password, 10);
         db.prepare('UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
             .run(hashedPassword, userId);
+
+        await logAction('USER_PASSWORD_RESET', `Reset password for user ${user ? user.username : userId}`, req);
 
         res.json({ success: true, message: 'Password berhasil diubah' });
     } catch (error) {
@@ -149,10 +158,10 @@ router.put('/:id/password', requireAdmin, (req, res) => {
 });
 
 // Toggle user active status
-router.post('/:id/toggle', requireAdmin, (req, res) => {
+router.post('/:id/toggle', requireAdmin, async (req, res) => {
     try {
         const userId = req.params.id;
-        const user = db.prepare('SELECT is_active FROM users WHERE id = ?').get(userId);
+        const user = db.prepare('SELECT username, is_active FROM users WHERE id = ?').get(userId);
 
         if (!user) {
             return res.status(404).json({ error: 'User tidak ditemukan' });
@@ -161,6 +170,8 @@ router.post('/:id/toggle', requireAdmin, (req, res) => {
         const newStatus = user.is_active ? 0 : 1;
         db.prepare('UPDATE users SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
             .run(newStatus, userId);
+
+        await logAction('USER_TOGGLE', `Toggled user ${user.username} status to ${newStatus ? 'active' : 'inactive'}`, req);
 
         res.json({
             success: true,
@@ -174,16 +185,18 @@ router.post('/:id/toggle', requireAdmin, (req, res) => {
 });
 
 // Delete user
-router.delete('/:id', requireAdmin, (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
     try {
         const userId = req.params.id;
 
-        const user = db.prepare('SELECT id FROM users WHERE id = ?').get(userId);
+        const user = db.prepare('SELECT username FROM users WHERE id = ?').get(userId);
         if (!user) {
             return res.status(404).json({ error: 'User tidak ditemukan' });
         }
 
         db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+
+        await logAction('USER_DELETE', `Deleted user ${user.username}`, req);
 
         res.json({ success: true, message: 'User berhasil dihapus' });
     } catch (error) {

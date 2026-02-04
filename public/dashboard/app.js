@@ -161,33 +161,78 @@ function navigateTo(page) {
         users: 'Manajemen User',
         payments: 'Pembayaran',
         bandwidth: 'Bandwidth Monitor',
-        settings: 'Pengaturan'
+        settings: 'Pengaturan',
+        audit: 'Audit Trail'
     };
-    document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
+    document.getElementById('pageTitle').textContent = titles[page];
 
-    // Load page content
-    loadPageContent(page);
-}
-
-async function loadPageContent(page) {
+    // Load content
     const container = document.getElementById('pageContent');
+    container.innerHTML = '<div class="loading">Loading...</div>';
 
     switch (page) {
         case 'dashboard':
-            await loadDashboard(container);
+            loadDashboard(container);
             break;
         case 'users':
-            await loadUsers(container);
+            loadUsers(container);
             break;
         case 'payments':
-            await loadPayments(container);
+            loadPayments(container);
             break;
         case 'bandwidth':
-            await loadBandwidth(container);
+            loadBandwidth(container);
             break;
         case 'settings':
-            await loadSettings(container);
+            loadSettings(container);
             break;
+        case 'audit':
+            loadAudit(container);
+            break;
+    }
+}
+
+async function loadAudit(container) {
+    try {
+        const logs = await api('/audit');
+
+        container.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h3>Log Aktivitas Sistem</h3>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Action</th>
+                                <th>Details</th>
+                                <th>IP Address</th>
+                                <th>User Agent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${logs.length === 0 ? `
+                                <tr><td colspan="5" style="text-align:center;color:var(--text-secondary)">Belum ada data log</td></tr>
+                            ` : logs.map(log => `
+                                <tr>
+                                    <td>${new Date(log.created_at).toLocaleString('id-ID')}</td>
+                                    <td><span class="badge badge-info">${escapeHtml(log.action)}</span></td>
+                                    <td>${escapeHtml(log.details)}</td>
+                                    <td>${escapeHtml(log.ip_address || '-')}</td>
+                                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(log.user_agent)}">
+                                        ${escapeHtml(log.user_agent || '-')}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        container.innerHTML = `<div class="card"><p>Error: ${error.message}</p></div>`;
     }
 }
 
@@ -472,12 +517,14 @@ async function loadSettings(container) {
                         <input type="text" id="settingReminder" value="${escapeHtml(settings.reminder_days || '3,1,0')}" placeholder="3,1,0">
                     </div>
                     <div class="form-group">
-                        <label>
+                        <div class="form-check">
                             <input type="checkbox" id="settingAutoDisconnect" ${settings.auto_disconnect === 'true' ? 'checked' : ''}>
-                            Auto disconnect jika overdue
-                        </label>
+                            <label for="settingAutoDisconnect">Auto disconnect jika overdue</label>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
+                    <div style="margin-top: 32px;">
+                        <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
+                    </div>
                 </form>
             </div>
             
