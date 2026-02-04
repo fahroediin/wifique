@@ -7,6 +7,33 @@ let users = [];
 let payments = [];
 let stats = {};
 
+// Theme Management
+function initTheme() {
+    const savedTheme = localStorage.getItem('wifique-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeUI(savedTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('wifique-theme', newTheme);
+    updateThemeUI(newTheme);
+}
+
+function updateThemeUI(theme) {
+    const icon = document.getElementById('themeIcon');
+    const text = document.getElementById('themeText');
+    if (icon && text) {
+        icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        text.textContent = theme === 'dark' ? 'Light' : 'Dark';
+    }
+}
+
+// Initialize theme immediately
+initTheme();
+
 // Check authentication on load
 document.addEventListener('DOMContentLoaded', async () => {
     const isAuthenticated = await checkAuth();
@@ -95,15 +122,28 @@ async function handleLogout() {
     }
 }
 
+// View management
 function showLogin() {
-    document.getElementById('loginModal').style.display = 'flex';
+    document.getElementById('loginScreen').style.display = 'flex';
     document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('adminLoginForm').reset();
 }
 
 function showDashboard() {
-    document.getElementById('loginModal').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('dashboard').style.display = 'flex';
     navigateTo('dashboard');
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+
+    sidebar.classList.toggle('active');
+
+    if (overlay) {
+        overlay.classList.toggle('active');
+    }
 }
 
 // Navigation
@@ -332,11 +372,15 @@ async function loadPayments(container) {
                                     <td>
                                         ${p.status === 'pending' ? `
                                             <div class="action-buttons">
-                                                <button class="btn btn-success btn-sm" onclick="showPaymentModal(${p.id}, '${escapeHtml(p.user_name)}', '${escapeHtml(p.unit_name)}', ${p.amount}, ${p.period_month}, ${p.period_year})">Bayar</button>
+                                                <button class="btn btn-primary btn-sm" onclick="generateQRPayment(${p.id})" title="Generate QR QRIS">📱 QR</button>
+                                                <button class="btn btn-success btn-sm" onclick="showPaymentModal(${p.id}, '${escapeHtml(p.user_name)}', '${escapeHtml(p.unit_name)}', ${p.amount}, ${p.period_month}, ${p.period_year})">✓ Bayar</button>
                                                 <button class="btn btn-danger btn-sm" onclick="markOverdue(${p.id})">Overdue</button>
                                             </div>
                                         ` : p.status === 'overdue' ? `
-                                            <button class="btn btn-success btn-sm" onclick="showPaymentModal(${p.id}, '${escapeHtml(p.user_name)}', '${escapeHtml(p.unit_name)}', ${p.amount}, ${p.period_month}, ${p.period_year})">Bayar</button>
+                                            <div class="action-buttons">
+                                                <button class="btn btn-primary btn-sm" onclick="generateQRPayment(${p.id})" title="Generate QR QRIS">📱 QR</button>
+                                                <button class="btn btn-success btn-sm" onclick="showPaymentModal(${p.id}, '${escapeHtml(p.user_name)}', '${escapeHtml(p.unit_name)}', ${p.amount}, ${p.period_month}, ${p.period_year})">✓ Bayar</button>
+                                            </div>
                                         ` : `
                                             <span class="badge badge-secondary">Lunas</span>
                                         `}
@@ -439,6 +483,29 @@ async function loadSettings(container) {
             
             <div class="card">
                 <div class="card-header">
+                    <h3>💳 Integrasi Pakasir (Payment Gateway)</h3>
+                </div>
+                <form id="pakasirForm">
+                    <div class="form-group">
+                        <label>Project Slug</label>
+                        <input type="text" id="pakasirProject" value="${escapeHtml(settings.pakasir_project || '')}" placeholder="nama-proyek-anda">
+                        <small style="color:var(--text-secondary)">Dapatkan dari dashboard Pakasir</small>
+                    </div>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" id="pakasirApiKey" value="${escapeHtml(settings.pakasir_api_key || '')}" placeholder="API Key dari Pakasir">
+                    </div>
+                    <div class="form-group">
+                        <label>Webhook URL (copy ke Pakasir)</label>
+                        <input type="text" id="webhookUrl" value="${window.location.origin}/api/pakasir/webhook" readonly style="background:var(--bg-primary)">
+                        <small style="color:var(--text-secondary)">Set URL ini di Edit Proyek Pakasir</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Simpan Pakasir</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
                     <h3>Ubah Password Admin</h3>
                 </div>
                 <form id="passwordForm">
@@ -466,6 +533,20 @@ async function loadSettings(container) {
                     auto_disconnect: document.getElementById('settingAutoDisconnect').checked ? 'true' : 'false'
                 });
                 alert('Pengaturan berhasil disimpan');
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        // Pakasir form handler
+        document.getElementById('pakasirForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await api('/settings/bulk', 'POST', {
+                    pakasir_project: document.getElementById('pakasirProject').value,
+                    pakasir_api_key: document.getElementById('pakasirApiKey').value
+                });
+                alert('Pengaturan Pakasir berhasil disimpan');
             } catch (error) {
                 alert(error.message);
             }
@@ -642,6 +723,62 @@ async function generateMonthlyPayments() {
     } catch (error) {
         alert(error.message);
     }
+}
+
+// Generate QR Payment via Pakasir
+async function generateQRPayment(paymentId) {
+    try {
+        const result = await api(`/pakasir/create/${paymentId}`, 'POST', { method: 'qris' });
+
+        if (result.success) {
+            // Show QR modal
+            const payment = result.payment;
+            const qrContainer = document.createElement('div');
+            qrContainer.innerHTML = `
+                <div class="modal" id="qrModal" style="display:flex">
+                    <div class="modal-content" style="text-align:center">
+                        <div class="modal-header">
+                            <h3>💳 Pembayaran QRIS</h3>
+                            <button class="modal-close" onclick="document.getElementById('qrModal').remove()">&times;</button>
+                        </div>
+                        <div class="payment-info">
+                            <p><strong>${escapeHtml(payment.user_name)}</strong> - ${escapeHtml(payment.unit_name)}</p>
+                            <p style="font-size:24px;font-weight:bold;color:#22c55e">Rp ${formatNumber(payment.total_payment)}</p>
+                        </div>
+                        <div id="qrcode" style="margin:20px auto;background:white;padding:20px;border-radius:10px;display:inline-block"></div>
+                        <p style="color:var(--text-secondary);font-size:12px">Order ID: ${payment.order_id}</p>
+                        <p style="color:var(--text-secondary);font-size:12px">Expired: ${new Date(payment.expired_at).toLocaleString('id-ID')}</p>
+                        <div class="modal-footer" style="justify-content:center">
+                            <button class="btn btn-ghost" onclick="copyPaymentLink('${payment.order_id}')">📋 Copy Link</button>
+                            <button class="btn btn-primary" onclick="document.getElementById('qrModal').remove()">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(qrContainer);
+
+            // Generate QR code using QRCode library or simple text
+            const qrDiv = document.getElementById('qrcode');
+            if (window.QRCode) {
+                new QRCode(qrDiv, {
+                    text: payment.qr_string,
+                    width: 200,
+                    height: 200
+                });
+            } else {
+                // Fallback: show as text
+                qrDiv.innerHTML = '<p style="color:#333;word-break:break-all;font-size:10px;max-width:250px">' + payment.qr_string + '</p>';
+            }
+        }
+    } catch (error) {
+        alert('Gagal generate QR: ' + error.message);
+    }
+}
+
+function copyPaymentLink(orderId) {
+    const link = window.location.origin + '/api/pakasir/status/' + orderId;
+    navigator.clipboard.writeText(link);
+    alert('Link copied!');
 }
 
 // Helper functions

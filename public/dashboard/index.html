@@ -5,188 +5,219 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WiFique - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-    <!-- Login Modal -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content login-modal">
-            <div class="login-header">
-                <div class="logo-small">
+<!-- Login Screen -->
+<div id="loginScreen" class="login-screen">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-logo">
+                <div class="logo-circle">
                     <svg viewBox="0 0 24 24" fill="none">
                         <path
                             d="M12 3C6.5 3 2 6.58 2 11c0 2.03 1.04 3.86 2.73 5.21L4 21l5-2.5c.95.31 1.96.5 3 .5 5.5 0 10-3.58 10-8s-4.5-8-10-8z"
                             stroke="currentColor" stroke-width="2" />
                     </svg>
                 </div>
-                <h2>WiFique Admin</h2>
-                <p>Masuk untuk mengelola sistem</p>
             </div>
-            <form id="adminLoginForm">
+            <h1>WiFique</h1>
+            <p class="login-subtitle">Sistem Manajemen WiFi Kontrakan</p>
+
+            <form id="adminLoginForm" class="login-form">
                 <div class="form-group">
                     <label>Username</label>
-                    <input type="text" id="adminUsername" required placeholder="admin">
+                    <input type="text" id="adminUsername" required placeholder="Masukkan username">
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" id="adminPassword" required placeholder="••••••••">
+                    <input type="password" id="adminPassword" required placeholder="Masukkan password">
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Login</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Main Dashboard -->
-    <div id="dashboard" class="dashboard-container" style="display: none;">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo-small">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <path
-                            d="M12 3C6.5 3 2 6.58 2 11c0 2.03 1.04 3.86 2.73 5.21L4 21l5-2.5c.95.31 1.96.5 3 .5 5.5 0 10-3.58 10-8s-4.5-8-10-8z"
-                            stroke="currentColor" stroke-width="2" />
-                    </svg>
-                </div>
-                <span>WiFique</span>
-            </div>
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-page="dashboard">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
-                        <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
-                        <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
-                        <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
-                    </svg>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#" class="nav-item" data-page="users">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" />
-                        <path d="M4 21v-2a4 4 0 014-4h8a4 4 0 014 4v2" stroke="currentColor" stroke-width="2" />
-                    </svg>
-                    <span>Users</span>
-                </a>
-                <a href="#" class="nav-item" data-page="payments">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2" />
-                        <path d="M2 10h20" stroke="currentColor" stroke-width="2" />
-                    </svg>
-                    <span>Pembayaran</span>
-                </a>
-                <a href="#" class="nav-item" data-page="bandwidth">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    <span>Bandwidth</span>
-                </a>
-                <a href="#" class="nav-item" data-page="settings">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
-                        <path
-                            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
-                            stroke="currentColor" stroke-width="2" />
-                    </svg>
-                    <span>Settings</span>
-                </a>
-            </nav>
-            <div class="sidebar-footer">
-                <button id="logoutBtn" class="btn btn-ghost btn-block">
-                    <svg viewBox="0 0 24 24" fill="none">
-                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    <span>Logout</span>
+                <button type="submit" class="btn btn-primary btn-block btn-lg">
+                    Masuk
                 </button>
-            </div>
-        </aside>
+            </form>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="main-header">
+            <p class="login-footer">© 2026 WiFique. All rights reserved.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Main Dashboard -->
+<div id="dashboard" class="dashboard-container" style="display: none;">
+    <!-- Sidebar Overlay for mobile -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-small">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                        d="M12 3C6.5 3 2 6.58 2 11c0 2.03 1.04 3.86 2.73 5.21L4 21l5-2.5c.95.31 1.96.5 3 .5 5.5 0 10-3.58 10-8s-4.5-8-10-8z"
+                        stroke="currentColor" stroke-width="2" />
+                </svg>
+            </div>
+            <span class="sidebar-title">WiFique</span>
+            <button class="sidebar-close" onclick="toggleSidebar()">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
+                    <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="users">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" />
+                    <path d="M4 21v-2a4 4 0 014-4h8a4 4 0 014 4v2" stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span>Users</span>
+            </a>
+            <a href="#" class="nav-item" data-page="payments">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2" />
+                    <path d="M2 10h20" stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span>Pembayaran</span>
+            </a>
+            <a href="#" class="nav-item" data-page="bandwidth">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+                <span>Bandwidth</span>
+            </a>
+            <a href="#" class="nav-item" data-page="settings">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                    <path
+                        d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
+                        stroke="currentColor" stroke-width="2" />
+                </svg>
+                <span>Settings</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button id="logoutBtn" class="btn btn-ghost btn-block">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="main-header">
+            <div class="header-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <svg viewBox="0 0 24 24" fill="none" width="24" height="24">
+                        <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" />
+                    </svg>
+                </button>
                 <h1 id="pageTitle">Dashboard</h1>
-                <div class="header-actions">
-                    <span id="adminName">Admin</span>
-                </div>
-            </header>
-
-            <div id="pageContent">
-                <!-- Content loaded dynamically -->
             </div>
-        </main>
-    </div>
-
-    <!-- Add/Edit User Modal -->
-    <div id="userModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="userModalTitle">Tambah User</h3>
-                <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="themeIcon">🌙</span>
+                    <span id="themeText">Dark</span>
+                </button>
+                <span id="adminName">Admin</span>
             </div>
-            <form id="userForm">
-                <input type="hidden" id="userId">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="userUsername" required placeholder="username untuk login WiFi">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="userPassword" placeholder="password untuk login WiFi">
-                </div>
-                <div class="form-group">
-                    <label>Nama</label>
-                    <input type="text" id="userName" required placeholder="Nama penghuni">
-                </div>
-                <div class="form-group">
-                    <label>Unit/Kamar</label>
-                    <input type="text" id="userUnit" required placeholder="Contoh: Unit A / Kamar 1">
-                </div>
-                <div class="form-group">
-                    <label>No. WhatsApp</label>
-                    <input type="text" id="userPhone" required placeholder="628xxxxxxxxxx">
-                </div>
-                <div class="form-group">
-                    <label>Bandwidth Limit (Mbps)</label>
-                    <input type="number" id="userBandwidth" value="10" min="1" max="100">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-ghost" onclick="closeModal('userModal')">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </div>
-            </form>
+        </header>
+
+        <div id="pageContent">
+            <!-- Content loaded dynamically -->
         </div>
-    </div>
+    </main>
+</div>
 
-    <!-- Payment Modal -->
-    <div id="paymentModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Konfirmasi Pembayaran</h3>
-                <button class="modal-close" onclick="closeModal('paymentModal')">&times;</button>
-            </div>
-            <form id="paymentForm">
-                <input type="hidden" id="paymentId">
-                <div class="payment-info">
-                    <p><strong>User:</strong> <span id="paymentUserName"></span></p>
-                    <p><strong>Unit:</strong> <span id="paymentUnit"></span></p>
-                    <p><strong>Jumlah:</strong> <span id="paymentAmount"></span></p>
-                    <p><strong>Periode:</strong> <span id="paymentPeriod"></span></p>
-                </div>
-                <div class="form-group">
-                    <label>Catatan (opsional)</label>
-                    <textarea id="paymentNotes" rows="2" placeholder="Catatan pembayaran"></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-ghost" onclick="closeModal('paymentModal')">Batal</button>
-                    <button type="submit" class="btn btn-success">Konfirmasi Lunas</button>
-                </div>
-            </form>
+<!-- Add/Edit User Modal -->
+<div id="userModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="userModalTitle">Tambah User</h3>
+            <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
         </div>
+        <form id="userForm">
+            <input type="hidden" id="userId">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="userUsername" required placeholder="username untuk login WiFi">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="userPassword" placeholder="password untuk login WiFi">
+            </div>
+            <div class="form-group">
+                <label>Nama</label>
+                <input type="text" id="userName" required placeholder="Nama penghuni">
+            </div>
+            <div class="form-group">
+                <label>Unit/Kamar</label>
+                <input type="text" id="userUnit" required placeholder="Contoh: Unit A / Kamar 1">
+            </div>
+            <div class="form-group">
+                <label>No. WhatsApp</label>
+                <input type="text" id="userPhone" required placeholder="628xxxxxxxxxx">
+            </div>
+            <div class="form-group">
+                <label>Bandwidth Limit (Mbps)</label>
+                <input type="number" id="userBandwidth" value="10" min="1" max="100">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('userModal')">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <script src="app.js"></script>
+<!-- Payment Modal -->
+<div id="paymentModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Konfirmasi Pembayaran</h3>
+            <button class="modal-close" onclick="closeModal('paymentModal')">&times;</button>
+        </div>
+        <form id="paymentForm">
+            <input type="hidden" id="paymentId">
+            <div class="payment-info">
+                <p><strong>User:</strong> <span id="paymentUserName"></span></p>
+                <p><strong>Unit:</strong> <span id="paymentUnit"></span></p>
+                <p><strong>Jumlah:</strong> <span id="paymentAmount"></span></p>
+                <p><strong>Periode:</strong> <span id="paymentPeriod"></span></p>
+            </div>
+            <div class="form-group">
+                <label>Catatan (opsional)</label>
+                <textarea id="paymentNotes" rows="2" placeholder="Catatan pembayaran"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('paymentModal')">Batal</button>
+                <button type="submit" class="btn btn-success">Konfirmasi Lunas</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="app.js"></script>
 </body>
 
 </html>
