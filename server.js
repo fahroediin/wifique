@@ -29,6 +29,7 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/bandwidth', require('./routes/bandwidth'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/pakasir', require('./routes/pakasir'));
 
 // Portal route (Captive Portal)
 app.get('/portal', (req, res) => {

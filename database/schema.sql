@@ -29,6 +29,10 @@ CREATE TABLE IF NOT EXISTS payments (
     paid_date DATE,
     status VARCHAR(20) DEFAULT 'pending',
     notes TEXT,
+    pakasir_order_id VARCHAR(100),
+    pakasir_payment_number TEXT,
+    pakasir_expired_at DATETIME,
+    pakasir_method VARCHAR(50),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -76,8 +80,10 @@ INSERT OR IGNORE INTO settings (key, value) VALUES
     ('monthly_fee', '100000'),
     ('reminder_days', '3,1,0'),
     ('auto_disconnect', 'true'),
-    ('grace_period_days', '0');
+    ('grace_period_days', '0'),
+    ('pakasir_project', ''),
+    ('pakasir_api_key', '');
 
 -- Insert default admin (password: admin123)
 INSERT OR IGNORE INTO admins (username, password, name) VALUES 
-    ('admin', '$2a$10$rQnM1DxG8xK3Z5vL0Y9YyeZp3LmQ1oN4vH8J2wXu6B3cF7dE9gH1i', 'Administrator');
+    ('admin', '$2a$10$S7hzDVWM95dB3makAIvCmeG9l.vnRCD/VNQ6lbUykm9L08XFrSgDC', 'Administrator');
